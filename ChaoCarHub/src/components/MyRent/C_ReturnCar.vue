@@ -6,7 +6,8 @@ defineProps({
   item: Object,
 });
 const isReturn = ref(false)
-
+const fine = (item.r_totalprice/item.r_amountdays) * (calculateDaysDifference(currentDate, item.r_day_return))
+const lateFees = fine+(fine/2)
 </script>
 
 <template>
@@ -95,9 +96,10 @@ const isReturn = ref(false)
           </p>
         </div>
         <!-- <h1> {{ isReturn }}</h1> -->
+        
         <a class="column is-size-6" v-if="!myrentStore.hadReturn.includes(item.r_id) && isReturn == false">
           <div class="pb-2" style="color:red;"> ต้องชำระค่าปรับจำนวน
-            {{ item.r_totalprice * (calculateDaysDifference(currentDate, item.r_day_return)) }} บาท
+            {{ lateFees }} บาท
           </div>
           <button @click="myrentStore.btnReturn(item.r_id), isReturn = true" class="button btn has-text-white font"
             style="width: 100%">
