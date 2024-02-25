@@ -6,8 +6,7 @@ defineProps({
   item: Object,
 });
 const isReturn = ref(false)
-const fine = (item.r_totalprice/item.r_amountdays) * (calculateDaysDifference(currentDate, item.r_day_return))
-const lateFees = fine+(fine/2)
+
 </script>
 
 <template>
@@ -67,17 +66,19 @@ const lateFees = fine+(fine/2)
             </div>
 
             <!-- Check ว่ากดคืนรถหรือยัง ? -->
-            <div class="column has-text-left" v-if="(!myrentStore.hadReturn.includes(item.r_id) && !isReturn)">
+            <div v-if="(!myrentStore.hadReturn.includes(item.r_id) && !isReturn)">
               <!-- r_id : {{myrentStore.hadReturn.includes(item.r_id)}}<br/>
                 isReturn : {{isReturn}} -->
 
-              <div style="color:red;"
+              <div class="column has-text-left" style="color:red;"
                 v-if="(currentDate && item.r_day_return) && (calculateDaysDifference(currentDate, item.r_day_return)) > 0">
                 (เกินระยะเวลาการคืนรถเป็นเวลา
                 {{ calculateDaysDifference(currentDate, item.r_day_return) }} วัน)
 
                 <!-- คำนวณค่าปรับ : (ค่าเช่ารายวัน*จำนวนวัน) -->
-
+                <!-- <div> ต้องชำระค่าปรับจำนวน
+                    {{ item.r_totalprice*(calculateDaysDifference(currentDate, item.r_day_return)) }} บาท
+                  </div> -->
               </div>
 
             </div>
@@ -96,14 +97,21 @@ const lateFees = fine+(fine/2)
           </p>
         </div>
         <!-- <h1> {{ isReturn }}</h1> -->
-        
-        <a class="column is-size-6" v-if="!myrentStore.hadReturn.includes(item.r_id) && isReturn == false">
+        <a class="column is-size-6"
+          v-if="!myrentStore.hadReturn.includes(item.r_id) && isReturn == false && (calculateDaysDifference(currentDate, item.r_day_return)) > 0">
           <div class="pb-2" style="color:red;"> ต้องชำระค่าปรับจำนวน
-            {{ lateFees }} บาท
+            {{ ((item.r_totalprice/item.r_amountdays) * (calculateDaysDifference(currentDate, item.r_day_return))) + ((item.r_totalprice/item.r_amountdays) * (calculateDaysDifference(currentDate, item.r_day_return))/5) }} บาท
           </div>
           <button @click="myrentStore.btnReturn(item.r_id), isReturn = true" class="button btn has-text-white font"
             style="width: 100%">
             ชำระเงิน
+          </button>
+        </a>
+        <a class="column is-size-6"
+          v-else-if="!myrentStore.hadReturn.includes(item.r_id) && isReturn == false && (calculateDaysDifference(currentDate, item.r_day_return)) < 0">
+          <button @click="myrentStore.btnReturn(item.r_id), isReturn = true" class="button btn has-text-white font"
+            style="width: 100%">
+            คืนรถ
           </button>
         </a>
         <a class="column is-size-6" v-if="myrentStore.hadReturn.includes(item.r_id) || isReturn">
