@@ -50,12 +50,30 @@ router.get("/myrent/car", isLoggedIn, async function (req, res, next) {
   
   });
 
-  //button cancel pickup car
+  //button cancel pickup car 
   router.put("/myrent/cancelPickup/:id",isLoggedIn, async function (req, res, next) {
     try {
-      const [rows, fields] = await pool.query('UPDATE rental SET r_status=? WHERE r_id=?', 
+      const [rows1, fields1] = await pool.query('UPDATE rental SET r_status=? WHERE r_id=?', 
       ["cancel", req.params.id])
+
+      const [rows2, fields2] = await pool.query('INSERT INTO return_car(r_id, re_timestamp, re_status) VALUES(?, CURRENT_TIMESTAMP, ?)', 
+      [req.params.id, "ยกเลิกการรับรถ"])
+
       console.log("Router for cancel is here")
+      return res.json({rows1, rows2})
+    } catch (err) {
+      return res.status(500).json(err)
+    }
+  
+  });
+
+  router.post("/myrent/returnCancelPickup/:id",isLoggedIn, async function (req, res, next) {
+    try {
+
+      const [rows, fields] = await pool.query('INSERT INTO return_car(r_id, re_timestamp, re_status) VALUES(?, CURRENT_TIMESTAMP, ?)', 
+      [req.params.id, "ยกเลิกการรับรถ"])
+
+      console.log("Router for return cancel is here: ", res.json(rows))
       return res.json(rows)
     } catch (err) {
       return res.status(500).json(err)
@@ -82,13 +100,35 @@ router.get("/myrent/car", isLoggedIn, async function (req, res, next) {
       join rental using(r_id)
       join car using(car_id)
       join user using(u_id)
-      WHERE re_status = "รอตรวจสอบการคืนรถ"`)
+      WHERE re_status IN ("รอตรวจสอบการคืนรถ", "ยกเลิกการรับรถ")`)
       return res.json(rows)
     } catch (err) {
       return res.status(500).json(err)
     }
   
   });
+  
+  // admin verify cancel pickup
+  router.put("/admin/returnCancelPickup/:id" ,isLoggedIn, async function (req, res, next) {
+    const conn = await pool.getConnection();
+    await conn.beginTransaction();
+    try {
+      //change return_car status
+      const results1 = await conn.query(
+        "UPDATE return_car SET re_status=? WHERE re_id=?",
+        ["คืนรถสำเร็จ", req.params.id]
+      );
+  
+      await conn.commit();
+      return res.json("รับทราบการยกเลิกรับรถสำเร็จ");
+    } catch (err) {
+      await conn.rollback();
+      return res.status(400).json(err);
+    } finally {
+      conn.release();
+    }
+  });
+
 
   //admin return car check
   router.put("/admin/return/:id" ,isLoggedIn, async function (req, res, next) {

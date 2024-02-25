@@ -19,29 +19,46 @@ onMounted(myrentStore.FetchReturncar);
       >
     </h1>
     <div> 
-        <div v-if="myrentStore.showAlertVerified">
+        <div v-if="myrentStore.showAlertVerified && !myrentStore.isCancel">
             <div class="modal">
-                  <div class="modal-content">
-                    <p class="is-size-5 has-text-black">
-                      {{ myrentStore.alertMessage }}
-                    </p>
-                    <br />
-                    <div class="buttons">
-                      <button @click="myrentStore.confirmVerified(true)"
-                        class="button is-size-6 has-background-success has-text-white"
-                      >
-                        Ok
-                      </button>
-                      <button @click="myrentStore.confirmVerified(false)"
-                        class="button is-size-6 has-background-danger has-text-white"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
+              <div class="modal-content">
+                <p class="is-size-5 has-text-black">
+                  {{ myrentStore.alertMessage }}
+                </p>
+                <br />
+                <div class="buttons">
+                  <button @click="myrentStore.confirmVerified(true)"
+                    class="button is-size-6 has-background-success has-text-white"
+                  >
+                    Ok
+                  </button>
+                  <button @click="myrentStore.confirmVerified(false)"
+                    class="button is-size-6 has-background-danger has-text-white"
+                  >
+                    Cancel
+                  </button>
                 </div>
+              </div>
             </div>
-          </div>
+        </div>
+        <div v-else-if="myrentStore.showAlertVerified && myrentStore.isCancel">
+            <div class="modal">
+              <div class="modal-content">
+                <p class="is-size-5 has-text-black">
+                  {{ myrentStore.alertMessage }}
+                </p>
+                <br />
+                <div class="buttons">
+                  <button @click="myrentStore.confirmCancelVerified(true)"
+                    class="button is-size-6 has-background-success has-text-white"
+                  >
+                    Ok
+                  </button>
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
     <table style="width: 100%" >
       <tr style="background-color: hsl(217, 76%, 92%);" class="sticky">
         <th>รหัสผู้ใช้</th>
@@ -52,7 +69,7 @@ onMounted(myrentStore.FetchReturncar);
         <th>วันและเวลาคืนรถ</th>
         <th>ตรวจสอบการคืนรถ</th>
       </tr>
-      <tr  v-for="item in myrentStore.allReturncar" :key="item.re_id">
+      <tr  v-for="item in myrentStore.allReturncar" :key="item.re_id" :style="{ 'background-color': item.r_status === 'cancel' ? 'hsl(0, 100%, 90%, 50%)' : '' }">
         <td> {{ item.u_id }}</td>
         <td> {{ item.u_fname }} {{ item.u_lname }}</td>
         <td> {{ item.car_code }}</td>
@@ -61,7 +78,7 @@ onMounted(myrentStore.FetchReturncar);
         <td> {{ item.r_day_return}} {{ item.r_time_return}} </td>
         <td class="has-text-danger">
           <div class="control">
-            <div class="level-item">
+            <div v-if="item.r_status != 'cancel'" class="level-item">
               <button class="button is-link" @click="myrentStore.showConfirmReturnCar(item.car_brand, item.car_model, item.u_fname, item.re_id)">
                 <span>Verified</span>
                 <span class="icon is-small">
@@ -69,6 +86,11 @@ onMounted(myrentStore.FetchReturncar);
                     src="https://cdn-icons-png.flaticon.com/512/871/871896.png"
                   />
                 </span>
+              </button>
+            </div>
+            <div v-if="item.r_status === 'cancel'" class="level-item">
+              <button class="button is-danger" @click="myrentStore.showConfirmReturnCancelCar(item.car_brand, item.car_model, item.u_fname, item.re_id)">
+                <span>Request to Cancel</span>
               </button>
             </div>
           </div>
