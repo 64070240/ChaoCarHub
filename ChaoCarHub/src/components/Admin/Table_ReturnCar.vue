@@ -78,3 +78,36 @@ onMounted(myrentStore.FetchReturncar);
       </div>
     </div>
 </template>
+<script>
+export default {
+  data() {
+    return {
+      currentDate: ''
+    };
+  },
+  mounted() {
+    this.currentDate = this.getCurrentDate();
+  },
+  computed: {
+    myrentStore() {
+      return this.$store.state.myRent;
+    }
+  },
+  methods: {
+    getCurrentDate() {
+      const current = new Date();
+      const month = (current.getMonth() + 1).toString().padStart(2, '0');
+      const date = `${current.getFullYear()}-${month}-${current.getDate()}`;
+      console.log('Current Date: ', date);
+      return date;
+    },
+    calculateDaysDifference(currentDate, returnDate) {
+      const current = new Date(currentDate);
+      const previous = new Date(returnDate);
+      const timeDifference = current.getTime() - previous.getTime();
+      const daysDifference = Math.celi(timeDifference / (1000 * 60 * 60 * 24));
+      return daysDifference;
+    }
+  }
+};
+</script>
